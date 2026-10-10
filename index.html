@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>WebHID Demo</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+    <script crossorigin src="https://unpkg.com/@msgpack/msgpack@3.1.3"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="app-header">
+        <div class="app-title">
+          <h1>WebHID Demo</h1>
+        </div>
+
+        <div class="device-status" aria-live="polite">
+          <span class="status-dot" data-status-dot></span>
+          <div>
+            <strong data-status>未连接</strong>
+            <small data-device>等待选择设备</small>
+          </div>
+        </div>
+      </header>
+
+      <section class="panel" aria-labelledby="device-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="device-title">设备</h2>
+            <p>连接设备后，可以发送下面的预设指令。</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="button button-primary" data-connect>连接设备</button>
+          <button class="button" data-command="gMtu" disabled>发送 gMtu</button>
+          <button class="button" data-command="gDevInfo" disabled>发送 gDevInfo</button>
+          <button class="button button-quiet" data-disconnect disabled>断开连接</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="log-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="log-title">通信记录</h2>
+            <p>按时间倒序显示请求、HID 数据和解包结果。</p>
+          </div>
+          <button class="text-button" data-clear>清空记录</button>
+        </div>
+
+        <div class="console" data-console aria-live="polite">
+          <div class="empty-state">
+            <span>&gt;_</span>
+            <p>尚无通信记录</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        WebHID 需要通过 localhost 或 HTTPS 访问，建议使用最新版 Chrome 或 Edge。
+      </footer>
+    </main>
+
+    <template data-log-template>
+      <article class="log-entry">
+        <div class="log-meta">
+          <span class="log-type" data-log-level></span>
+          <time data-log-time></time>
+        </div>
+        <h3 data-log-title></h3>
+        <pre class="log-detail" data-log-message></pre>
+        <pre class="log-json" data-log-data></pre>
+      </article>
+    </template>
+
+    <template data-empty-template>
+      <div class="empty-state">
+        <span>&gt;_</span>
+        <p>尚无通信记录</p>
+      </div>
+    </template>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
