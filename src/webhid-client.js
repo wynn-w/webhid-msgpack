@@ -12,6 +12,7 @@ export class WebHIDClient extends EventTarget {
   #device = null;
   #requestPending = false;
   #cancelRequest = null;
+  #requestNumber = 0;
 
   get device() {
     return this.#device;
@@ -66,6 +67,8 @@ export class WebHIDClient extends EventTarget {
     const device = this.#device;
     const packets = packetize(codec.encode(message), MTU);
     const depacketize = createDepacketizer();
+    const requestNumber = ++this.#requestNumber;
+    let receivedPacketNumber = 0;
     this.#requestPending = true;
 
     return new Promise((resolve, reject) => {
@@ -95,7 +98,12 @@ export class WebHIDClient extends EventTarget {
           );
           const usedBytes = getUsedReportBytes(report);
           if (usedBytes) {
-            this.#emitReport("reportreceived", event.reportId, usedBytes);
+            receivedPacketNumber += 1;
+            this.#emitReport("reportreceived", event.reportId, usedBytes, {
+              requestNumber,
+              packetNumber: receivedPacketNumber,
+              packetCount: report[0] === 0xa5 ? 1 : undefined,
+            });
           }
 
           const content = depacketize(report);
@@ -115,27 +123,31 @@ export class WebHIDClient extends EventTarget {
 
       this.#cancelRequest = fail;
       device.addEventListener("inputreport", handleInput);
-      this.#sendPackets(device, packets).catch((error) => {
+      this.#sendPackets(device, packets, requestNumber).catch((error) => {
         fail(new Error(`发送 HID 报告失败：${errorMessage(error)}`));
       });
     });
   }
 
-  async #sendPackets(device, packets) {
-    for (const packet of packets) {
+  async #sendPackets(device, packets, requestNumber) {
+    for (const [index, packet] of packets.entries()) {
       await device.sendReport(REPORT_ID, packet);
 
       const usedBytes = getUsedReportBytes(packet);
       if (usedBytes) {
-        this.#emitReport("reportsent", REPORT_ID, usedBytes);
+        this.#emitReport("reportsent", REPORT_ID, usedBytes, {
+          requestNumber,
+          packetNumber: index + 1,
+          packetCount: packets.length,
+        });
       }
     }
   }
 
-  #emitReport(eventName, reportId, data) {
+  #emitReport(eventName, reportId, data, packetInfo) {
     this.dispatchEvent(
       new CustomEvent(eventName, {
-        detail: { reportId, data, hex: toHex(data) },
+        detail: { reportId, data, hex: toHex(data), ...packetInfo },
       }),
     );
   }

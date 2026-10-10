@@ -248,6 +248,16 @@ button {
   color: #24798c;
 }
 
+.log-entry.tx {
+  border-left: 3px solid #9b7bc2;
+  background: #fcfaff;
+}
+
+.log-entry.rx {
+  border-left: 3px solid #58a0b0;
+  background: #f8fcfd;
+}
+
 .log-entry h3 {
   margin: 8px 0 6px;
   font-size: 0.9rem;

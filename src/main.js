@@ -75,10 +75,17 @@ function appendLog({ level, title, message, data }) {
 }
 
 function appendReport(direction, report) {
+  const packetPosition = report.packetCount
+    ? `${report.packetNumber}/${report.packetCount}`
+    : `#${report.packetNumber}`;
+
   appendLog({
     level: direction,
-    title: direction === "tx" ? "发送 HID Report" : "接收 HID Report",
-    message: `${report.hex}\nReport ID ${report.reportId} · ${report.data.length} bytes`,
+    title: `${direction === "tx" ? "发送" : "接收"}数据包 ${packetPosition}`,
+    message: [
+      `请求 #${report.requestNumber} · Report ID ${report.reportId} · ${report.data.length} bytes`,
+      report.hex,
+    ].join("\n"),
   });
 }
 
